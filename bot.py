@@ -6,8 +6,8 @@ import asyncpg
 import logging
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-# Логирование
-logging.basicConfig(level=logging.INFO)
+# Настройка логирования
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Список хэштегов, которые мы отслеживаем
@@ -100,8 +100,24 @@ async def sync_with_channel(application):
         await fetch_channel_posts(application, last_sync_time)
     logger.info("Синхронизация завершена.")
 
+# Функция для обработки команды /start
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    logger.info("Команда /start получена")
+    await update.message.reply_text('Привет! Я твой архивный бот. Введи команду /archive для просмотра постов.')
+
+# Функция для обработки ошибок
+async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    logger.error(f'Ошибка: {context.error}')
+
 if __name__ == "__main__":
+    # Создаем приложение с токеном, который ты получил от BotFather
     application = ApplicationBuilder().token("7956547094:AAGaa0bxNyavehJw6HmMLatxJRGLbgIVNrs").build()
+
+    # Добавляем обработчик команды /start
+    application.add_handler(CommandHandler('start', start))
+
+    # Добавляем обработчик ошибок
+    application.add_error_handler(error_handler)
 
     # Запуск планировщика и бота
     start_scheduler(application)
